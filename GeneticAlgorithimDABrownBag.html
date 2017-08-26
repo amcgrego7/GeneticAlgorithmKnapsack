@@ -1,0 +1,408 @@
+<html>
+<head>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!-- Font-awesome Icons -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+<body>
+	<div id="wrap"></div>
+	<div class="container">
+		<div class="row"><div style="float:right; z-index:1; position:relative;">Developed by Andy McGregor | <a href="mailto:mcgregor_andrew@bah.com" target="_top">mcgregor_andrew@bah.com</a></div>
+			<h1 style="font-weight:600;">Pack that car!</h1>
+			<h2>A genetic algorithm developed in JavaScript. Click "submit" to see what you should bring on your upcoming trip!</h2>
+		</div>
+		<div class="row" style="padding-top:10px;">
+			<div class="col-sm-4" style="padding: 15px; background: #ddd; border-radius:5px">
+				<div id=parameters>
+					<label for>Mutation Rate (higher means more randomness):</label>
+					<select class="form-control" id="mutationRate" style="width:25%">
+						  <option value=.1>.1</option>
+						  <option value=.2>.2</option>
+						  <option value=.3>.3</option>
+						  <option value=.4>.4</option>
+						  <option selected="true" value=.5>.5</option>
+						  <option value=.6>.6</option>
+						  <option value=.7>.7</option>
+						  <option value=.8>.8</option>
+						  <option value=.9>.9</option>		  
+					</select>	
+					
+					<label for>Number of chromosomes to keep after crossover:</label>
+					<select id="chromosomes" class="form-control" style="width:25%">
+						  <option value=2>2</option>
+						  <option value=3>3</option>	  
+						  <option value=4>4</option>
+						  <option value=5>5</option>				  
+					</select>
+					
+					<label for>Maximum generations:</label>
+					<input type="text" id="maxGenerations" class="form-control" style="width:25%" value="2000">
+					
+					<label for>Maximum space available in the car:</label>
+					<input type="text" id="sizeMax" class="form-control" style="width:25%" value="40">	
+					
+					<div class="row" style="margin-top:20px">
+						<div class="col-sm-6">
+							<button type="submit" class="form-control btn-primary" onclick="beginAlgorithm()">Submit</button>
+						</div>
+						<div class="col-sm-6">
+							<p id="countdown" style="margin-top:2px; font-weight:bold"></p>
+						</div>	
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-8">
+				<table style="width:100%">
+					<thead>
+						<tr>
+							<td><b>Textbook</b></br>Value: $30</br>Size: 3</td>
+							<td><b>Bicycle</b></br>Value: $100</br>Size: 55</td>
+							<td><b>Soccer Ball</b></br>Value: $36</br>Size: 12</td>
+							<td><b>Bed</b></br>Value: $419</br>Size: 15</td>
+							<td><b>Binoculars</b></br>Value: $65</br>Size: 12</td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><i class="fa fa-book fa-5x" aria-hidden="true" id="obj0"></td>
+							<td><i class="fa fa-bicycle fa-5x" aria-hidden="true" id="obj1"></td>
+							<td><i class="fa fa-futbol-o fa-5x" aria-hidden="true" id="obj2"></td>
+							<td><i class="fa fa-bed fa-5x" aria-hidden="true" id="obj3"></td>
+							<td><i class="fa fa-binoculars fa-5x" aria-hidden="true" id="obj4"></td>						
+						</tr>
+					</tbody>
+					<thead>
+						<tr>
+							<td style="padding-top:20px"><i class="fa fa-medkit fa-5x" aria-hidden="true" id="obj5"></td>
+							<td style="padding-top:20px"><i class="fa fa-briefcase fa-5x" aria-hidden="true" id="obj6"></td>
+							<td style="padding-top:20px"><i class="fa fa-phone fa-5x" aria-hidden="true" id="obj7"></td>
+							<td style="padding-top:20px" ><i class="fa fa-desktop fa-5x" aria-hidden="true" id="obj8"></td>
+							<td style="padding-top:20px"><i class="fa fa-trophy fa-5x" aria-hidden="true" id="obj9"></td>						
+						</tr>							
+					</thead>
+					<tbody>
+						<tr>
+							<td><b>Healthkit</b></br>Value: $89</br>Size: 5</td>
+							<td><b>Briefcase</b></br>Value: $79</br>Size: 2</td>
+							<td><b>Phone</b></br>Value: $116</br>Size: 2</td>
+							<td><b>Desktop</b></br>Value: $224</br>Size: 4</td>
+							<td><b>Trophy  </b></br>Value: $3</br>Size: 1</td>
+						</tr>
+					</tbody>					
+				</table>
+			</div> 
+		</div>
+		<table id="outputReport" class="table table-hover" style="display:none; width:100%; margin-top:25px;">
+			<thead>
+				<tr class="active">
+					<th>Generation</th>
+					<th>Solution (1 = Yes, 0 = No)</th>
+					<th>Total Size Used</th>
+					<th>Total Value<th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+
+</body>
+
+
+<script>
+
+var inputs = [
+		{item: "Textbook",
+		size: 3,
+		value: 30},	
+		
+		{item: "Bicycle",
+		size: 55,
+		value: 100},
+		
+		{item: "Soccer Ball",
+		size: 12,
+		value: 36},
+		
+		{item: "Bed",
+		size: 15,
+		value: 419},		
+
+		{item: "Binoculars",
+		size: 12,
+		value: 65},	
+
+		{item: "Healthkit",
+		size: 5,
+		value: 89},		
+		
+		{item: "Briefcase",
+		size: 2,
+		value: 79},
+		
+		{item: "Phone",
+		size: 2,
+		value: 116},
+		
+		{item: "Desktop",
+		size: 4,
+		value: 224},
+
+		{item: "Trophy",
+		size: 1,
+		value: 3}		
+	];
+
+	
+function beginAlgorithm () {	
+	//this is to track how long the algorithm will take
+	var t0 = performance.now();
+	//we'll remove the contents of the output report, and display the table since it starts out as hidden
+	$("#outputReport tbody").empty()
+	$("#outputReport").show()
+	
+	potentialSolutionsToStart = 20;
+	chromosomes = $("#chromosomes").val();
+	maxGenerations = $("#maxGenerations").val();
+	sizeMax = $("#sizeMax").val();
+	mutationRate = $("#mutationRate").val();
+	
+	//kick things off by creating a bunch of arrays, where arrays are randomly assigned 0/1 for whether or not we keep or dismiss an object
+	//for each array, we sum the values,  sum the size, then check that the constraints are satisfied
+	//if all constraints are satisfied, then we push the array to allPotentialSolutions
+	allPotentialSolutions = [];
+	
+	for(i = 0; i < potentialSolutionsToStart; i++) {	
+		var totalValue = 0;
+		var totalSize = 0;
+		var potentialSolution = [];
+
+		//create a possible solution, where we assign binary (bin) values for each object
+		for(e = 0; e < inputs.length; e++) {
+			var bin = Math.round(Math.random());		
+			potentialSolution.push(bin);
+			totalValue = totalValue + (bin * inputs[e].value);
+			totalSize = totalSize + (bin * inputs[e].size);
+		}
+		//if the we exceed our sizeMax constraint, we set the total value to 0	
+		if (sizeMax < totalSize) {
+			totalValue = 0;
+		}
+	
+		//tack on the calculated totalValue and totalSize to the potentialSolution array
+		potentialSolution.push(totalValue);
+		potentialSolution.push(totalSize);
+		
+		//push the potential solution as a candidate
+		allPotentialSolutions.push(potentialSolution);
+	}
+	
+	//sort all potential solutions so we can then take the x number of elite solutions to keep
+	allPotentialSolutions = allPotentialSolutions.sort(Comparator);
+	allPotentialSolutions = allPotentialSolutions.splice(0, chromosomes);
+		
+	
+	//Alright, way to go! Now we have our initial set of data to perform learning algorithms on!
+	//Let's begin the machine learning loop which will run until the total generations equals the the maximum allowable generations 
+	var globalOptimum = 0;
+	var totalGenerations = 0;
+	for (x = 0; totalGenerations < maxGenerations; x++) {
+		allPotentialSolutions = learningAlgorithm(allPotentialSolutions) // this does the crossover and mutation then sorts the potential solutions by value
+		localOptimum = allPotentialSolutions[0] // the best solutution from the generation is returned as a local optimum
+		if (localOptimum[inputs.length] > globalOptimum) { // if the value is greater than the global optimum, we'll replace the global with the local
+			globalOptimum = localOptimum;
+			totalGenerations ++; //keep that ticker going up!
+			if (maxGenerations - totalGenerations < 2000) { //if the #rows to post to the DOM is large, it slows things down so I capped it at 2000
+				$("#outputReport tbody").prepend("<tr><td>"+totalGenerations+"</td><td>"+localOptimum.slice(0,-2)+"</td><td>"+localOptimum[(inputs.length + 1)]+"</td><td>"+localOptimum[inputs.length]+"</td><tr>")	
+			}
+		} else {
+			totalGenerations ++; //still gotta keep that ticker going up! 
+			if (maxGenerations - totalGenerations < 2000) {	//if the #rows to post to the DOM is large, it slows things down so I capped it at 2000
+				$("#outputReport tbody").prepend("<tr><td>"+totalGenerations+"</td><td>"+localOptimum.slice(0,-2)+"</td><td>"+localOptimum[(inputs.length + 1)]+"</td><td>"+localOptimum[inputs.length]+"</td></tr>")	
+			}
+		}
+	}
+	$(localOptimum).each(function( index ) {
+		var objSelector = "obj" + index;
+		if (this == 1) {	
+			$('#' + objSelector).removeClass("notSelected").addClass("selected")		
+		} else {
+			$('#' + objSelector).removeClass("Selected").addClass("notSelected")				
+		}
+	})
+	
+	//this is to track how long the algorithm took
+	var t1 = performance.now();
+	$("#countdown").html("The algorithm took " + Math.round(((t1 - t0)/1000)*1000)/1000 + " seconds.")
+}
+
+function learningAlgorithm (allPotentialSolutions) {
+	//this is where it gets confusing, but bear with me
+	//we will take the elite solutions, duplicate the very best option to keep it untouched, and conduct crossover amongst the elite solutions
+	var localOptimum = allPotentialSolutions[0].slice(0); //gets the best solution
+	var crossoverSplitPlacement = Math.floor((Math.random() * 10)); // picks a random number that we split at for crossover
+	var cloneArr = allPotentialSolutions.clone() //performing a deep clone https://en.wikipedia.org/wiki/Object_copying
+	var crossoverArr = [];
+	
+	//creating the top half for each crossover
+	for (i = 0; i < allPotentialSolutions.length; i++) {
+		crossoverArr.push(new Array)
+		var topPortion = cloneArr[i].splice(0, crossoverSplitPlacement)			
+		for (e = 0; e < (chromosomes-1); e++) {
+			crossoverArr[i].push(topPortion.slice(0))
+		}
+	}
+	
+	//now we are creating the bottom half for each crossover
+	//we need to mix and match the tops and bottoms, but we don't want to match the same combinations we started with
+	//so we will remove the complete arrays as they are complete and pushing them to the crossoverArr
+		var len = crossoverArr.length
+		for (i = 0; i<len; i++) {
+			var bottomPortion = cloneArr[i].slice(0, -2)
+
+	// we will push [i] bottom half to the tops
+			var crossoverIndex = i;
+			for (e = 0; e < len-1; e++) {
+				if (crossoverIndex < (len-1)) {
+					crossoverIndex++;
+				}
+				else {
+					crossoverIndex = 1-len+crossoverIndex
+				}
+	//push each value from the bottom array into the array for the top			
+				bottomPortion.forEach(function(entry) {
+					crossoverArr[crossoverIndex][0].push(entry);
+				});
+	
+	//we remove complete arrays (after a top/bottom mate) from their parent array
+	//and to the end as a new array outside of the original parent
+				var tempPotentialSolution = crossoverArr[crossoverIndex].splice(0,1)
+				var tempPotentialSolution = calculateScore(tempPotentialSolution)
+				tempPotentialSolution.forEach(function(entry) {
+					crossoverArr.push(entry);
+				});			
+			}
+		}
+		
+	//remove the original parent arrays
+		crossoverArr.splice(0,len);
+		
+	//puts the localOptimum back in the mix
+		crossoverArr.push(localOptimum)
+	
+	//mutates the localOptimum
+		crossoverArr.push(mutation(localOptimum))
+	
+	//sorts the arr based on value and take the elite and report the localOptimum
+	crossoverArr.sort(Comparator);
+	crossoverArr = crossoverArr.splice(0, chromosomes);
+	return(crossoverArr)
+
+}
+
+//this is a reusable function for calculating the fitness score/total value of the inputs
+//keeping in mind that the constraint of sqftmax cannot be exceeded!
+function calculateScore(arr) {
+	var totalValue = 0;
+	var totalSize = 0;
+		for(a = 0; a < arr[0].length; a++) {
+			var bin = arr[0][a];		
+			totalValue = totalValue + (bin * inputs[a].value);
+			totalSize = totalSize + (bin * inputs[a].size);
+		}
+		
+		if (sizeMax < totalSize) {
+			totalValue = 0;
+		}
+		
+	arr[0].push(totalValue);
+	arr[0].push(totalSize);
+	
+	//push the potential solution as a candidate
+	return(arr);
+}
+	
+//a little mutation here adds some randomness to the algorithm so we don't get stuck in a rut
+//the higher the mutation rate, the more randomness we are introducing
+function mutation(localOptimum) {
+	var totalValue = 0;
+	var totalSize = 0;
+	var arr = [];
+
+	//we use the local optimum and switch the binary value of an input if the random number is >= mutation rate
+	for(e = 0; e < inputs.length; e++) {
+		var bin = Math.round(Math.random()) >= mutationRate ? 1-localOptimum[e] : localOptimum[e]	
+		arr.push(bin);
+		totalValue = totalValue + (bin * inputs[e].value);
+		totalSize = totalSize + (bin * inputs[e].size);
+	}
+	//make sure the constraints are met
+	if (sizeMax < totalSize) {
+		totalValue = 0;
+	}
+	//then push to the array the value and size
+	arr.push(totalValue);
+	arr.push(totalSize);
+	
+	//return the potential solution as a candidate
+	return(arr);
+}
+	
+//use this to sort an array of arrays in decending order
+function Comparator(a, b) {
+	if (a[inputs.length] > b[inputs.length]) return -1;
+	if (a[inputs.length] < b[inputs.length]) return 1;
+return 0;
+}	
+	
+//this is a reusable clone function for creating deep copies https://en.wikipedia.org/wiki/Object_copying
+Array.prototype.clone = function() {
+	return allPotentialSolutions.slice(0);
+};
+
+</script>
+<style>
+
+.selected {
+	color: #18d2a0;
+}
+
+.notSelected {
+	color: #333333;
+}
+
+.fa {
+padding-top:5px;
+}
+
+#wrap {
+	position:relative;
+}
+
+#wrap:after {
+    content: "\f1b9";
+    font-family: FontAwesome;
+    font-style: normal;
+    font-weight: normal;
+    text-decoration: inherit;
+    position: absolute;
+    font-size: 400px;
+    color: rgba(51, 122, 183, .08) ;
+    top: 50%;
+    left: 50%;
+    margin: -100px 0 0 200px;
+    z-index: 0;
+}
+
+td, th {
+	text-align:center;
+}
+</style>
+</html>
